@@ -47,7 +47,7 @@ export const addProductCart = async (req,res) =>{
 
     try{
         
-        await CartServices.addProductsCart(cid, pid);
+        await CartServices.addProductCart(cid, pid);
         res.status(200).json({ status: 'success', payload: cart })
 
     }catch(error){
@@ -94,4 +94,12 @@ export const emptyCart = async (req,res) =>{
     }catch{
         return res.status(500).json({ error: error.message })
     }
+}
+
+// Comprar el carrito y generar ticket
+export const purchaseProducts = async (req, res) => {
+    const id = req.params.cid
+    const user = req.user
+    res.json({payload: user})
+
 }

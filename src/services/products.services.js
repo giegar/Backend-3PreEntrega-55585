@@ -1,11 +1,11 @@
-import ProductManager from "../dao/managers/productManagerMongo.js";
+/* import ProductManager from "../dao/managers/productManagerMongo.js";
 
 const productManager = new ProductManager();
 
 export default class ProductServices {
 
-    getProducts = async (limit, page, sort, category, stock) => {
-        return await productManager.getProducts(limit, page, sort, category, stock);
+    getProducts = async (limit, page, sort, query) => {
+        return await productManager.getProducts(limit, page, sort, query);
     }
 
     addProduct = async (product) => {
@@ -24,4 +24,4 @@ export default class ProductServices {
         return await productManager.deleteProduct(id);
     }
 
-}
+} */

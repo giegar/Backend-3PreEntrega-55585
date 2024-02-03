@@ -9,11 +9,11 @@ sessionRouter.get('/error', async (req, res) => {
     res.send('Error')
 })
 
-sessionRouter.post('/register', async (req, res) => {
-
-    const { name, lastname, email, age, password, confirmPassword } = req.body
+sessionRouter.post('/register', passport.authenticate('register', {failureRedirect: '/home', session: false}), async (req, res) => {
+    
+   const { name, lastname, email, age, password, confirmPassword } = req.body
     if (!name || !lastname || !email || !age || !password || !confirmPassword)
-        return res.status(400).json({ status: 'error', message: 'error register'})
+    return res.status(400).json({ status: 'error', message: 'error register'})
 
     if (password !== confirmPassword) return res.send("Passwords must match")
 
@@ -34,24 +34,16 @@ sessionRouter.post('/register', async (req, res) => {
     res.redirect('/products')
 })
 
-sessionRouter.post('/login', async (req, res) => {
+sessionRouter.post('/login', passport.authenticate('login', {failureRedirect: '/home', session:false}), async (req, res) => {
+    if(!req.user) return res.status(404).send("Invalid credentials")
+        
+    const {token} = req.user
 
-    const { email, password } = req.body
+    res.cookie('CoderCookie', token, {
+        maxAge: 60 * 60 * 1000,
+        httpOnly:true
+    }).redirect('/products')
 
-    if (!email || !password)
-    return res.status(400).json({ status: 'error', error: 'all fields required' })
-
-    const user = await UserModel.findOne({ email: email })
-    if(!user) return res.status(404).send('User Not Found')
-
-    if(!isValidPassword(user, password)) return res.send('Incorrect password')
-    delete user.password
-
-    if(req.session.user) return res.send('Already logged')
-
-    req.session.user = user
-
-    res.redirect('/products')
 })
 
 sessionRouter.get('/logout', (req, res) => {

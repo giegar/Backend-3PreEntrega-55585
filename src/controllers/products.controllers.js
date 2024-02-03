@@ -1,21 +1,22 @@
-import ProductServices from "../services/products.services.js";
+//import ProductServices from "../services/products.services.js";
+import ProductManager from "../dao/managers/productManagerMongo.js";
+const productManager = new ProductManager();
 
 // Obtener productos con paginacion y filters
 export const getProducts = async (req,res) =>{
 
     try{
-        const limit = parseInt(req.query?.limit ?? 10);
-        const page = parseInt(req.query?.page ?? 1);
-        const sort = req.query.sort ?? '' ;
-        const category = req.query.category ?? '' ;
-        const stock = parseInt(req.query.stock) ?? '' ;
+        const limit = req.query?.limit ?? 10
+        const page = req.query?.page ?? 1
+        const sort = req.query?.sort ?? ""
+        const query = req.query?.query
+        const products = await productManager.getProducts(limit, page, sort, query)
 
-        const products = await ProductServices.getProducts(limit, page, sort, category, stock)
-
+        console.log("getProducts controller", products)
         res.send(products)
 
     }catch(error){
-        //return res.status(500).send("Cannot get the products" + error)
+
     }
 
 }

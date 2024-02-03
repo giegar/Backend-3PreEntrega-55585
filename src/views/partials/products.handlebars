@@ -3,7 +3,7 @@
     <div class="user-box">
         {{#if user}}
             Hola {{user.rol}} {{user.name}} {{user.lastname}}!
-            <a class="link-cart" href="/cart">Mi Carrito</a>
+            <a class="link-cart" href="/cart/{{user.cartId}}">Mi Carrito</a>
             <a href="/sessions/logout" class="link">Logout</a>
             {{else}}
             <a href="/login" class="link">Login</a>
@@ -43,7 +43,7 @@
             <p class="text">{{this.category}}</p>
             <p class="text">Precio: {{this.price}}</p>
             <a href="http://localhost:8080/product/{{this._id}}"><button class="btn">Ver más</button></a>
-            <button onclick="addToCart(`{{this._id}}`)" id="btnAddToCart" class="btn">Agregar al carrito</button>
+            <button id="addBtn" data-id="{{this._id}}" id="btnAddToCart" class="btn">Agregar al carrito</button>
         </div>
     {{/each}}
 </div> 
@@ -95,16 +95,46 @@ facialCategory.addEventListener("click", () => {
     window.location.href = "http://localhost:8080/products?limit={{products.limit}}&page={{products.page}}&category=Facial";
 }) 
 
-const cart = '655c103fb79dbe3e7084fdd3';
+{{!-- const cart = '655c103fb79dbe3e7084fdd3';
 async function addToCart (id){
-    const res = await fetch(`/api/carts/${cart}/product/${id}`, {
+    const res = await fetch(`/api/cart/${cart}/product/${id}`, {
             method: 'POST',
         })
         const result = await res.json()
         if (result.status === 'error') throw new Error(result.error)
 
         console.log('Producto agregado')
-}
+} --}}
+
+let btns = document.querySelectorAll('#addBtn')
+
+btns.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+        e.preventDefault()
+
+        const productId = e.target.getAttribute('data-id')
+        console.log("El ID del producto es: " + productId)
+
+        const result = await fetch('/api/user', {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+        const data = await result.json()
+        const cartId = data.cart
+        console.log(cartId)
+
+        await fetch(`/api/carts/${cartId}/products/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then(result => result.json()).then(json => console.log(json))
+    })
+})
+
+
 </script>
 
 

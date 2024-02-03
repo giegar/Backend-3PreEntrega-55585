@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { SchemaTypes } from "mongoose";
 
 const collection = 'users'
 
@@ -9,9 +9,10 @@ const schemaUsers = mongoose.Schema({
     email: {type: String, unique: true, required: [true, 'email is required']},
     password: {type: String, required: [true, 'password is required']},
     rol: {type: String, default: 'user', enum: ['user', 'admin']},
-    //cartId: {}
+    cartId: {type:SchemaTypes.ObjectId, ref:'Cart'}
 })
 
+mongoose.models = {}
 const UserModel = mongoose.model(collection, schemaUsers)
 
 export default UserModel

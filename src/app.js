@@ -15,6 +15,7 @@ import cartRouter from "./routes/carts.routes.js";
 import productRouter from "./routes/products.routes.js";
 import sessionRouter from "./routes/session.routes.js";
 import emailRouter from "./routes/email.routes.js";
+import UserRouter from "./routes/user.routes.js";
 
 import cookieParser from "cookie-parser";
 import MsgModel from "./dao/models/message.model.js";
@@ -62,9 +63,8 @@ app.use("/api/products", productRouter);
 app.use("/api/carts", cartRouter);
 app.use("/sessions", sessionRouter)
 app.use("/", emailRouter)
-
-const ViewsRouter = new viewsRouter()
-app.use("/", ViewsRouter.getRouter())
+app.use("/", viewsRouter)
+app.use('/api/user', UserRouter)
 
 // ------ MONGO DB CONNECT
 

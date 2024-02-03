@@ -1,6 +1,7 @@
 import fs from "fs"
 import ProductManager from "./productManager.js";
 
+
 class CartManager {
     constructor(path){
         this.carts = [];
@@ -140,9 +141,16 @@ class CartManager {
 
         return productInCart
     }
+
+    createTicket = async (ticket) => {
+        const result = await ticketModel.create(ticket)
+
+        return {status: 'Se creo el ticket correctamente', res: result}
+    }
+
 }
 
-const cManager = new CartManager("./src/database/carts.json");
+
 const products = new ProductManager ("./src/database/products.json")
 
 export default CartManager;

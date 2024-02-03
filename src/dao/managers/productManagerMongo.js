@@ -32,6 +32,7 @@ class ProductManager {
 
             const pageResults = await ProductModel.paginate(filter, options)
 
+            console.log(pageResults)
             return {status: "Success",
                     payload: pageResults.docs,
                     totalPages: pageResults.totalPages,

@@ -31,4 +31,12 @@ export default class CartServices {
     emptyCart = async (cartId) => {
         return await cartManager.emptyCart(cartId);
     }
+
+    createTicket = async (ticket) => {
+        return await cartManager.createTicket(ticket)
+    }
+
+    purchaseProducts = async (cid, email) => {
+        return await cartManager.purchaseProducts(cid, email)
+    }
 }

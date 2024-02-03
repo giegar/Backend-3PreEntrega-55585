@@ -1,12 +1,14 @@
 import CartModel from "../models/cart.model.js";
 import ProductModel from "../models/product.model.js";
+import TicketModel from "../models/ticket.model.js";
+
 
 class CartManager {
 
     addCart = async () => {
 
         try{
-            let cart = {
+            const cart = {
                 products: []
             }
 
@@ -103,6 +105,59 @@ class CartManager {
         if (!cart) return 'Cart not found';
     }
 
-}
+    createTicket = async (ticket) => {
+        const result = await TicketModel.create(ticket)
+        return {status: 'Ticket created succesfully', res: result}
+    }
 
+    purchaseProducts = async (cid, email) => {
+
+        const cart = await CartModel.findOne({_id:cid}).lean().exec()
+        if(!cart) return {status: error, res: 'Cart ID not found'}
+
+        const productsBuy = []
+        const productsReturned = []
+        let totalAmount = 0
+
+        for (const products of cart.products){
+            const product = await ProductModel.findOne(products.product)
+
+            if(product.stock == 0){
+                productsReturned.push(products)
+            } 
+
+            if(product.stock >= product.qty){
+                product.stock -= products.qty
+                await ProductModel.updateOne({_id: product._id}, {$set: product})
+                productsBuy.push({product: product._id, quantity: products.qty})
+                totalAmount += product.price * products.qty
+            } else {
+                productsReturned.push(products)
+            }  
+        }   
+
+        if(productsBuy.length > 0){
+            const newTicket ={
+                code: Math.floor(Math.random() * 1000),
+                purchase_datetime: new Date(),
+                amount: totalAmount,
+                purchaser: email,
+                products: productsBuy,
+            }
+
+            const ticket = await this.createTicket(newTicket)
+
+            cart.products = productsReturned
+
+            const newCart = await CartModel.updateOne({_id: cid}, cart)
+            const result = await TicketModel.findOne({_id:ticket.res._id}).lean().exec()
+
+            return {
+                status: 'Success',
+                ticket: result,
+                cart: cart
+            }}
+    }
+    
+}
 export default CartManager;

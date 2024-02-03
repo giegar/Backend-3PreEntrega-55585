@@ -14,5 +14,7 @@ export default {
     emailService: process.env.EMAIL_SERVICE,
     emailPort:process.env.EMAIL_PORT,
     googleAppPass: process.env.GOOGLE_PASSWORD,
-    googleAppUser: process.env.GOOGLE_USER
+    googleAppUser: process.env.GOOGLE_USER,
+
+    jwtSecretKey: process.env.SECRET_KEY_JWT
 }

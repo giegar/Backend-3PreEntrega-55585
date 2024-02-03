@@ -1,42 +1,63 @@
-import CustomRouter from "./routes.js";
-import express from "express";
 import ProductModel from "../dao/models/product.model.js";
 import CartModel from "../dao/models/cart.model.js";
-import { getProducts } from "../controllers/products.controllers.js";
 import ProductManager from "../dao/managers/productManagerMongo.js";
-import jwt from 'jsonwebtoken'
+import { getProducts } from "../controllers/products.controllers.js";
 
-const productManager = new ProductManager()
+import { Router } from "express";
+import passport from "passport";
+import { auth, publicAccess, current } from "../middlewares/middlewares.js";
 
-export default class viewsRouter extends CustomRouter {
-    init () {
+const viewsRouter = Router()
+const productManager = new ProductManager();
+const rol = ["admin"]
 
-    this.get("/login", ['PUBLIC'], (req, res) => {
+viewsRouter.get("/login", publicAccess, (req, res) => {
+        const user = req.session.user;
         res.render("partials/login", {
             title: "Inicia sesion"
     })
-    const user = req.session.user;
-    res.sendSuccess(user)
 })
 
-this.get("/register", ['PUBLIC'], (req, res) => {
+viewsRouter.get("/register", publicAccess, (req, res) => {
     res.render("partials/register", {
         title: "Registrate"
     })
 })
 
+// -------- Vista de ticket
+viewsRouter.get('/:cid/purchase', auth, passport.authenticate('jwt', {session: false}), async (req, res) => {
+    const id = req.params.cid
+    const {email} = req.user.user
+    
+    const {ticket, cart} = await CartServices.purchaseProducts(id,email)
+
+    console.log(ticket)
+
+    res.render('ticket', {
+        style: 'style.css',
+        ticket,
+        cart
+    })
+})
+
 // -------- Productos con paginacion
-this.get("/products", ['PUBLIC'], async (req, res) => {
+viewsRouter.get("/products", publicAccess, async (req, res) => {
 
-    const limit = parseInt(req.query?.limit ?? 10);
+    const limit = req.query?.limit ?? 10
+    const page = req.query?.page ?? 1
+    const sort = req.query?.sort
+    const query = req.query?.query
+    const user = req.session.user
+
+    /* const limit = parseInt(req.query?.limit ?? 10);
     const page = parseInt(req.query?.page ?? 1);
-    const category = req.query.category ?? '' ;
     const sort = req.query.sort ?? '' ;
-    const stock = parseInt(req.query.stock) ?? '' ;
 
-    const user = req.session.user;
+    const user = req.session.user; */
 
-    const products = await productManager.getProducts(limit, page, category, sort, stock)
+    //const products = await getProducts(limit, page, sort, query)
+    const products = await productManager.getProducts(limit, page, sort, query)
+    console.log("viewsRouter", products, limit, page, sort)
         res.render('partials/products',{
             products,
             user
@@ -44,7 +65,7 @@ this.get("/products", ['PUBLIC'], async (req, res) => {
 })
 
 // -------- Vista Home / Inicio
-this.get("/", ['PUBLIC'], async (req, res) => {
+viewsRouter.get("/", publicAccess, async (req, res) => {
 
     const user = req.session.user;
     const products = await ProductModel.find().lean().exec()
@@ -57,7 +78,7 @@ this.get("/", ['PUBLIC'], async (req, res) => {
 })
 
 // -------- Vista de Real Time Products - Websocket
-this.get("/realTime", ['ADMIN'], async (req, res) => {
+viewsRouter.get("/realTime", current(rol), async (req, res) => {
     const user = req.session.user;
     const products = await ProductModel.find().lean().exec()
 
@@ -69,25 +90,16 @@ this.get("/realTime", ['ADMIN'], async (req, res) => {
 })
 
 // -------- Vista de WebChat - Websocket
-this.get("/chat", ['USER'], async (req, res) => {
-    const user = req.session.user;
-
-    const token = jwt.sign(user, 'secret')
-
-    console.log("token", token)
+viewsRouter.get("/chat", auth, passport.authenticate('jwt', {session: false}), async (req, res) => {
 
     res.render("partials/chat",{
         title: "Live Chat",
         user,
-        token
     })
-    
-    res.sendSuccess(token)
-
 })
 
 // ------- Vista de informacion del producto
-this.get("/product/:pid", ['PUBLIC'], async (req, res) => {
+viewsRouter.get("/product/:pid", auth, passport.authenticate('jwt', {session: false}), async (req, res) => {
     const user = req.session.user;
     const { pid } = req.params;
     const product = await ProductModel.findById(pid).lean().exec()
@@ -100,7 +112,7 @@ this.get("/product/:pid", ['PUBLIC'], async (req, res) => {
 })
 
 // -------- Vista completa del carrito
-this.get("/cart/:cid", ['USER'], async (req, res) => {
+viewsRouter.get("/cart/:cid", auth, passport.authenticate('jwt', {session: false}), async (req, res) => {
 
     const user = req.session.user;
     const { cid } = req.params;
@@ -112,5 +124,5 @@ this.get("/cart/:cid", ['USER'], async (req, res) => {
         user
     })
 })
-    }
-}
+    
+export default viewsRouter
